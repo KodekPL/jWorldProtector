@@ -1,0 +1,13 @@
+name: jWorldProtector
+version: 0.1
+author: Kodek
+main: jcraft.wp.ProtectorPlugin
+
+permissions:
+  worldprotector.admin:
+    default: op
+
+commands:
+  worldprotector:
+    aliases: [wp, worldpro]
+    permission: worldprotector.admin
