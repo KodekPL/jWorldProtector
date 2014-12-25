@@ -4,10 +4,15 @@ author: Kodek
 main: jcraft.wp.ProtectorPlugin
 
 permissions:
-  worldprotector.admin:
+  worldprotector.commands:
+    default: op
+  worldprotector.region:
     default: op
 
 commands:
   worldprotector:
     aliases: [wp, worldpro]
-    permission: worldprotector.admin
+    permission: worldprotector.commands
+  region:
+    aliases: [rg]
+    permission: worldprotector.region
