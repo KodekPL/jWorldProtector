@@ -21,7 +21,7 @@ public abstract class CommandHandler implements CommandExecutor {
     }
 
     private void register() {
-        for (Method method : this.getClass().getMethods()) {
+        for (Method method : this.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(PluginCommand.class)) {
                 PluginCommand command = (PluginCommand) method.getAnnotation(PluginCommand.class);
 
