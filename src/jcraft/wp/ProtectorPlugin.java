@@ -13,6 +13,8 @@ public class ProtectorPlugin extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
+        this.getDataFolder().mkdirs();
+
         this.getCommand("worldprotector").setExecutor(new ProtectorCommands());
         this.getCommand("region").setExecutor(new RegionCommands());
     }
