@@ -24,13 +24,19 @@ public class WorldSettings extends YamlHandler {
     @SaveField(section = "mobs")
     public boolean disableWitherExplosion, disableWitherBlockDamage;
     @SaveField(section = "mobs")
+    public boolean disableWitherSkullExplosion, disableWitherSkullBlockDamage;
+    @SaveField(section = "mobs")
     public boolean disableFireballExplosion, disableFireballBlockDamage;
     @SaveField(section = "mobs")
     public boolean disableEnderDragonBlockDamage;
     @SaveField(section = "mobs")
+    public boolean disableOtherEntityExplosionDamage;
+    @SaveField(section = "mobs")
     public boolean disableEndermanBlockGrief;
     @SaveField(section = "mobs")
     public boolean disableZombieDoorBreaking;
+    @SaveField(section = "mobs")
+    public boolean disableSilverfishHideInBlock;
     @SaveField(section = "mobs")
     public boolean disablePaintingBreaking, disableItemFrameBreaking, disableArmorStandBreaking;
     @SaveField(section = "mobs")
@@ -44,26 +50,33 @@ public class WorldSettings extends YamlHandler {
 
         this.enabled = true;
 
-        this.disableLighter = false; // TODO
-        this.disableTntExplosion = true; // TODO
-        this.disableTntBlockDamage = true; // TODO
+        this.disableLighter = false;
+        this.disableTntExplosion = true;
+        this.disableTntBlockDamage = true;
 
         this.disableLightningFire = true;
         this.disableLavaFireSpread = true;
         this.disableAllFireSpread = true;
         this.disableFireBlockBreak = true;
 
-        this.disableCreeperExplosion = false; // TODO
-        this.disableCreeperBlockDamage = true; // TODO
+        this.disableCreeperExplosion = false;
+        this.disableCreeperBlockDamage = true;
 
-        this.disableWitherExplosion = false; // TODO
-        this.disableWitherBlockDamage = true; // TODO
+        this.disableWitherExplosion = false;
+        this.disableWitherBlockDamage = true;
 
-        this.disableEnderDragonBlockDamage = true; // TODO
+        this.disableWitherSkullExplosion = false;
+        this.disableWitherSkullBlockDamage = true;
 
-        this.disableEndermanBlockGrief = true; // TODO
+        this.disableEnderDragonBlockDamage = true;
 
-        this.disableZombieDoorBreaking = true; // TODO
+        this.disableOtherEntityExplosionDamage = true;
+
+        this.disableEndermanBlockGrief = true;
+
+        this.disableZombieDoorBreaking = true;
+
+        this.disableSilverfishHideInBlock = true;
 
         this.disablePaintingBreaking = true; // TODO
         this.disableItemFrameBreaking = true; // TODO
