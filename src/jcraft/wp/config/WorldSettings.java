@@ -34,44 +34,44 @@ public class WorldSettings extends YamlHandler {
     @SaveField(section = "mobs")
     public boolean disablePaintingBreaking, disableItemFrameBreaking, disableArmorStandBreaking;
     @SaveField(section = "mobs")
-    public boolean disableMobsCropsGrief;
+    public boolean disableMobsFarmlandGrief;
 
     @SaveField(section = "player")
-    public boolean disablePlayerCropsGrief;
+    public boolean disablePlayerFarmlandGrief;
 
     public WorldSettings(File file) {
         super(file);
 
         this.enabled = true;
 
-        this.disableLighter = false;
-        this.disableTntExplosion = true;
-        this.disableTntBlockDamage = true;
+        this.disableLighter = false; // TODO
+        this.disableTntExplosion = true; // TODO
+        this.disableTntBlockDamage = true; // TODO
 
         this.disableLightningFire = true;
         this.disableLavaFireSpread = true;
         this.disableAllFireSpread = true;
         this.disableFireBlockBreak = true;
 
-        this.disableCreeperExplosion = false;
-        this.disableCreeperBlockDamage = true;
+        this.disableCreeperExplosion = false; // TODO
+        this.disableCreeperBlockDamage = true; // TODO
 
-        this.disableWitherExplosion = false;
-        this.disableWitherBlockDamage = true;
+        this.disableWitherExplosion = false; // TODO
+        this.disableWitherBlockDamage = true; // TODO
 
-        this.disableEnderDragonBlockDamage = true;
+        this.disableEnderDragonBlockDamage = true; // TODO
 
-        this.disableEndermanBlockGrief = true;
+        this.disableEndermanBlockGrief = true; // TODO
 
-        this.disableZombieDoorBreaking = true;
+        this.disableZombieDoorBreaking = true; // TODO
 
-        this.disablePaintingBreaking = true;
-        this.disableItemFrameBreaking = true;
-        this.disableArmorStandBreaking = true;
+        this.disablePaintingBreaking = true; // TODO
+        this.disableItemFrameBreaking = true; // TODO
+        this.disableArmorStandBreaking = true; // TODO
 
-        this.disableMobsCropsGrief = true;
+        this.disableMobsFarmlandGrief = true;
 
-        this.disablePlayerCropsGrief = true;
+        this.disablePlayerFarmlandGrief = true;
     }
 
     public boolean isEnabled() {
