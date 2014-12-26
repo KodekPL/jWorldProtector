@@ -6,6 +6,8 @@ main: jcraft.wp.ProtectorPlugin
 permissions:
   worldprotector.commands:
     default: op
+  worldprotector.reload:
+    default: op
   worldprotector.region:
     default: op
 
