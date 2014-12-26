@@ -5,11 +5,18 @@ import jcraft.wp.WorldInstance;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.WitherSkull;
@@ -19,11 +26,80 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
+import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.Vector;
 
 public class EntityListener implements Listener {
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        final Entity entity = event.getEntity();
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(entity.getWorld().getName());
+
+        if (config == null) {
+            return;
+        }
+
+        final Entity damager = event.getDamager();
+
+        if (entity instanceof ItemFrame) {
+            if (config.getWorldSettings().disableItemFrameBreaking && !(damager instanceof Player)) {
+                event.setCancelled(true);
+                return;
+            }
+        } else if (entity instanceof ArmorStand) {
+            if (config.getWorldSettings().disableArmorStandBreaking && !(damager instanceof Player)) {
+                event.setCancelled(true);
+                // Set velocity downwards to minimize armor stand movement
+                entity.setVelocity(new Vector(0, -100, 0));
+                return;
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onHangingBreak(HangingBreakEvent event) {
+        final Hanging hanging = event.getEntity();
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(hanging.getWorld().getName());
+
+        if (config == null) {
+            return;
+        }
+
+        if (event instanceof HangingBreakByEntityEvent) {
+            final HangingBreakByEntityEvent entityEvent = (HangingBreakByEntityEvent) event;
+
+            Entity remover = entityEvent.getRemover();
+
+            if (remover instanceof Projectile) {
+                final Projectile projectile = (Projectile) remover;
+                final ProjectileSource removerEntity = projectile.getShooter();
+
+                remover = ((removerEntity instanceof LivingEntity) ? (LivingEntity) removerEntity : null);
+            }
+
+            if (!(remover instanceof Player)) {
+                if (hanging instanceof Painting && config.getWorldSettings().disablePaintingBreaking) {
+                    event.setCancelled(true);
+                } else if (hanging instanceof ItemFrame && config.getWorldSettings().disableItemFrameBreaking) {
+                    event.setCancelled(true);
+                }
+            }
+        } else if (event.getCause() == RemoveCause.EXPLOSION) {
+            if (hanging instanceof Painting && config.getWorldSettings().disablePaintingBreaking) {
+                event.setCancelled(true);
+            } else if (hanging instanceof ItemFrame && config.getWorldSettings().disableItemFrameBreaking) {
+                event.setCancelled(true);
+            }
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityInteract(EntityInteractEvent event) {

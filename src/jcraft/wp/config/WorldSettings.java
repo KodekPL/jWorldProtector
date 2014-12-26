@@ -78,9 +78,9 @@ public class WorldSettings extends YamlHandler {
 
         this.disableSilverfishHideInBlock = true;
 
-        this.disablePaintingBreaking = true; // TODO
-        this.disableItemFrameBreaking = true; // TODO
-        this.disableArmorStandBreaking = true; // TODO
+        this.disablePaintingBreaking = true;
+        this.disableItemFrameBreaking = true;
+        this.disableArmorStandBreaking = true;
 
         this.disableMobsFarmlandGrief = true;
 
