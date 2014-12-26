@@ -8,6 +8,8 @@ permissions:
     default: op
   worldprotector.reload:
     default: op
+  worldprotector.allow.lighter:
+    default: op
   worldprotector.region:
     default: op
 

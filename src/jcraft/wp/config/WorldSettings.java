@@ -8,10 +8,16 @@ public class WorldSettings extends YamlHandler {
     private boolean enabled;
 
     @SaveField(section = "ignition")
+    public boolean disableLighter;
+    @SaveField(section = "ignition")
     public boolean disableTntExplosion, disableTntBlockDamage;
 
     @SaveField(section = "fire")
+    public boolean disableLightningFire;
+    @SaveField(section = "fire")
     public boolean disableLavaFireSpread, disableAllFireSpread;
+    @SaveField(section = "fire")
+    public boolean disableFireBlockBreak;
 
     @SaveField(section = "mobs")
     public boolean disableCreeperExplosion, disableCreeperBlockDamage;
@@ -38,11 +44,14 @@ public class WorldSettings extends YamlHandler {
 
         this.enabled = true;
 
+        this.disableLighter = false;
         this.disableTntExplosion = true;
         this.disableTntBlockDamage = true;
 
+        this.disableLightningFire = true;
         this.disableLavaFireSpread = true;
         this.disableAllFireSpread = true;
+        this.disableFireBlockBreak = true;
 
         this.disableCreeperExplosion = false;
         this.disableCreeperBlockDamage = true;

@@ -5,6 +5,7 @@ import java.util.logging.Level;
 
 import jcraft.wp.commands.ProtectorCommands;
 import jcraft.wp.commands.RegionCommands;
+import jcraft.wp.listener.BlockListener;
 import jcraft.wp.listener.WorldListener;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,6 +29,7 @@ public class ProtectorPlugin extends JavaPlugin {
         worldsManager.loadWorlds();
 
         this.getServer().getPluginManager().registerEvents(new WorldListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BlockListener(), this);
 
         this.getCommand("worldprotector").setExecutor(new ProtectorCommands());
         this.getCommand("region").setExecutor(new RegionCommands());
