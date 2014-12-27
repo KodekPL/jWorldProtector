@@ -2,6 +2,7 @@ name: jWorldProtector
 version: 0.1
 author: Kodek
 main: jcraft.wp.ProtectorPlugin
+depend: [WorldEdit]
 
 permissions:
   worldprotector.commands:
