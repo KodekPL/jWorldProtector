@@ -55,15 +55,12 @@ public abstract class CommandHandler implements CommandExecutor {
         final Set<Method> cmdMethods = commands.get(args[0]);
 
         if (cmdMethods != null) {
-            for (Method cmdMethod : cmdMethods) {
-                PluginCommand command = (PluginCommand) cmdMethod.getAnnotation(PluginCommand.class);
+            PluginCommand command = null;
 
-                if (command.argsAmount() != args.length) {
-                    continue;
-                }
+            for (Method cmdMethod : cmdMethods) {
+                command = (PluginCommand) cmdMethod.getAnnotation(PluginCommand.class);
 
                 if (command.requiresPlayer() && !(sender instanceof Player)) {
-                    sender.sendMessage(ChatColor.RED + "This command is accessible only for players.");
                     continue;
                 }
 
@@ -72,7 +69,20 @@ public abstract class CommandHandler implements CommandExecutor {
                     continue;
                 }
 
+                if (command.argsAmount() != args.length) {
+                    if (!command.requiresPlayer() && sender instanceof Player) {
+                        continue;
+                    }
+
+                    sender.sendMessage(ChatColor.YELLOW + " Usage: " + command.usage());
+                    continue;
+                }
+
                 return invokeMethod(cmdMethod, sender, args);
+            }
+
+            if (command != null && command.requiresPlayer() && !(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "This command is accessible only for players.");
             }
         }
 

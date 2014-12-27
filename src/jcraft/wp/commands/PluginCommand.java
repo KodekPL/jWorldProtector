@@ -16,4 +16,6 @@ public @interface PluginCommand {
 
     boolean requiresPlayer() default false;
 
+    String usage();
+
 }
