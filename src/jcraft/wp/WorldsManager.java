@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import jcraft.wp.config.WorldSettings;
+import jcraft.wp.region.RegionContainer;
 
 import org.bukkit.World;
 
@@ -23,26 +24,33 @@ public class WorldsManager {
         ProtectorPlugin.log(Level.INFO, "Initialization of world '" + world.getName() + "'.");
 
         final File worldFile = new File(ProtectorPlugin.WORLDS_DIR, world.getName() + ".yml");
-        final WorldInstance worldInst;
+        final File regionFile = new File(ProtectorPlugin.REGIONS_DIR, world.getName() + ".yml");
+
+        final WorldSettings worldConfig = new WorldSettings(worldFile);
+        final RegionContainer regionContainer = new RegionContainer(regionFile);
 
         if (worldFile.exists()) {
-            final WorldSettings worldConfig = new WorldSettings(worldFile);
-
             worldConfig.load(); // Load world config to memory
             worldConfig.save(); // Save fresh copy of world config
 
-            worldInst = new WorldInstance(world, worldConfig);
-
             ProtectorPlugin.log(Level.INFO, "Loaded world '" + world.getName() + "' from file.");
         } else {
-            final WorldSettings worldConfig = new WorldSettings(worldFile);
-
             worldConfig.save();
-
-            worldInst = new WorldInstance(world, worldConfig);
 
             ProtectorPlugin.log(Level.INFO, "Created new world file for world '" + world.getName() + "'.");
         }
+
+        if (regionFile.exists()) {
+            regionContainer.load();
+
+            ProtectorPlugin.log(Level.INFO, "Loaded world '" + world.getName() + "' " + regionContainer.size() + " regions from file.");
+        } else {
+            regionContainer.save();
+
+            ProtectorPlugin.log(Level.INFO, "Created new world regions file for world '" + world.getName() + "'.");
+        }
+
+        final WorldInstance worldInst = new WorldInstance(world, worldConfig, regionContainer);
 
         worlds.put(worldInst.getBukkitWorld().getName(), worldInst);
     }

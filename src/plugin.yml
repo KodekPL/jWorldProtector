@@ -13,6 +13,28 @@ permissions:
     default: op
   worldprotector.region:
     default: op
+  worldprotector.region.define:
+    default: op
+  worldprotector.region.redefine:
+    default: op
+  worldprotector.region.select:
+    default: op
+  worldprotector.region.remove:
+    default: op
+  worldprotector.region.info:
+    default: op
+  worldprotector.region.teleport:
+    default: op
+  worldprotector.region.owners:
+    default: op
+  worldprotector.region.members:
+    default: op
+  worldprotector.region.permission:
+    default: op
+  worldprotector.region.save:
+    default: op
+  worldprotector.region.load:
+    default: op
 
 commands:
   worldprotector:

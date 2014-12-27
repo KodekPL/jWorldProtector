@@ -11,11 +11,12 @@ import jcraft.wp.listener.PlayerListener;
 import jcraft.wp.listener.WorldListener;
 import jcraft.wp.worldedit.WorldEditHandler;
 
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ProtectorPlugin extends JavaPlugin {
 
-    public static File WORLDS_DIR;
+    public static File WORLDS_DIR, REGIONS_DIR;
 
     private static ProtectorPlugin plugin;
     private static WorldsManager worldsManager;
@@ -26,10 +27,12 @@ public class ProtectorPlugin extends JavaPlugin {
         plugin = this;
 
         WORLDS_DIR = new File(this.getDataFolder(), "worlds");
+        REGIONS_DIR = new File(this.getDataFolder(), "regions");
 
         this.getDataFolder().mkdirs();
 
         WORLDS_DIR.mkdirs();
+        REGIONS_DIR.mkdirs();
 
         worldsManager = new WorldsManager();
         worldsManager.loadWorlds();
@@ -59,6 +62,16 @@ public class ProtectorPlugin extends JavaPlugin {
 
     public static void log(Level level, String message) {
         plugin.getLogger().log(level, message);
+    }
+
+    public static Player getOnlinePlayer(String name) {
+        for (Player player : getPlugin().getServer().getOnlinePlayers()) {
+            if (player.getName().equalsIgnoreCase(name)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
 }
