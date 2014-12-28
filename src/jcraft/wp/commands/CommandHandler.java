@@ -69,11 +69,7 @@ public abstract class CommandHandler implements CommandExecutor {
                     continue;
                 }
 
-                if (command.argsAmount() != args.length) {
-                    if (!command.requiresPlayer() && sender instanceof Player) {
-                        continue;
-                    }
-
+                if (args.length < command.minArgs() || args.length > command.maxArgs()) {
                     sender.sendMessage(ChatColor.YELLOW + " Usage: " + command.usage());
                     continue;
                 }

@@ -12,7 +12,7 @@ public class ProtectorCommands extends CommandHandler {
         sender.sendMessage(ChatColor.YELLOW + "jWorldProtector v" + ProtectorPlugin.getPlugin().getDescription().getVersion() + " by Kodek");
     }
 
-    @PluginCommand(args = { "reload" }, argsAmount = 1, requiresPlayer = true, permission = "worldprotector.reload", usage = "/wp reload")
+    @PluginCommand(args = { "reload" }, maxArgs = 1, minArgs = 1, requiresPlayer = false, permission = "worldprotector.reload", usage = "/wp reload")
     public void onRegionDefine(CommandSender sender, String[] args) {
         // Worlds reload
         ProtectorPlugin.getWorldsManager().reset();

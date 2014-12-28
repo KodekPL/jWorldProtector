@@ -10,7 +10,9 @@ public @interface PluginCommand {
 
     String[] args();
 
-    int argsAmount();
+    int minArgs();
+
+    int maxArgs();
 
     String permission();
 
