@@ -3,18 +3,16 @@ package jcraft.wp.listener;
 import jcraft.wp.ProtectorPlugin;
 import jcraft.wp.WorldInstance;
 import jcraft.wp.region.RegionInteraction;
+import jcraft.wp.util.EntityUtils;
+import jcraft.wp.util.MaterialUtils;
 import jcraft.wp.util.MetadataUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -31,7 +29,6 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.projectiles.ProjectileSource;
 
 public class RegionListener implements Listener {
 
@@ -85,7 +82,7 @@ public class RegionListener implements Listener {
             return;
         }
 
-        final Entity attacker = getSourceEntity(event.getAttacker());
+        final Entity attacker = EntityUtils.getSourceEntity(event.getAttacker());
         final World world = attacker.getWorld();
         final Location location = event.getVehicle().getLocation();
 
@@ -134,7 +131,7 @@ public class RegionListener implements Listener {
             return;
         }
 
-        final Entity remover = getSourceEntity(event.getEntity());
+        final Entity remover = EntityUtils.getSourceEntity(event.getEntity());
         final World world = remover.getWorld();
         final Location location = event.getEntity().getLocation();
 
@@ -157,7 +154,7 @@ public class RegionListener implements Listener {
         final World world = player.getWorld();
         final Block block = event.getClickedBlock();
 
-        if (isInteractiveMaterialBlock(block.getType()) || isInteractiveMaterialItem(player.getItemInHand().getType())) {
+        if (MaterialUtils.isInteractiveMaterialBlock(block.getType()) || MaterialUtils.isInteractiveMaterialItem(player.getItemInHand().getType())) {
             if (!canInteract(RegionInteraction.BLOCK_INTERACT, world, player, block.getX(), block.getY(), block.getZ())) {
                 event.setCancelled(true);
             }
@@ -171,7 +168,7 @@ public class RegionListener implements Listener {
         final Entity entity = event.getRightClicked();
         final Location location = entity.getLocation();
 
-        if (isProtectedEntity(entity.getType())) {
+        if (EntityUtils.isProtectedEntity(entity.getType())) {
             if (!canInteract(RegionInteraction.ENTITY_INTERACT, world, player, location.getX(), location.getY(), location.getZ())) {
                 event.setCancelled(true);
             }
@@ -187,8 +184,8 @@ public class RegionListener implements Listener {
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         final Entity entity = event.getEntity();
 
-        if (isProtectedEntity(entity.getType())) {
-            final Entity remover = getSourceEntity(event.getDamager());
+        if (EntityUtils.isProtectedEntity(entity.getType())) {
+            final Entity remover = EntityUtils.getSourceEntity(event.getDamager());
             final World world = entity.getWorld();
             final Location location = entity.getLocation();
 
@@ -233,149 +230,13 @@ public class RegionListener implements Listener {
     }
 
     public void sendWarningMessage(Player player) {
-        Long lastTime = (Long) MetadataUtil.get(player, "lastWarningMessage");
+        final Long lastTime = (Long) MetadataUtil.get(player, "lastWarningMessage");
 
-        if ((lastTime == null) || (System.currentTimeMillis() - lastTime.longValue() >= 500L)) {
+        if (lastTime == null || System.currentTimeMillis() - lastTime.longValue() >= 500L) {
             // TODO: Allow to change message in config
             player.sendMessage(ChatColor.RED + "Hey! " + ChatColor.GRAY + "Interactions in this region are blocked (cuboid).");
 
             MetadataUtil.set(player, "lastWarningMessage", Long.valueOf(System.currentTimeMillis()));
-        }
-
-    }
-
-    public Entity getSourceEntity(Entity entity) {
-        if (entity instanceof Projectile && ((Projectile) entity).getShooter() != null) {
-            final ProjectileSource shooter = ((Projectile) entity).getShooter();
-
-            return (Entity) shooter;
-        } else if (entity instanceof TNTPrimed && ((TNTPrimed) entity).getSource() != null) {
-            final Entity source = ((TNTPrimed) entity).getSource();
-
-            if (source instanceof Projectile && ((Projectile) entity).getShooter() != null) {
-                return getSourceEntity(source);
-            }
-
-            return source;
-        }
-
-        return entity;
-    }
-
-    public boolean isProtectedEntity(EntityType type) {
-        switch (type) {
-        case ARMOR_STAND:
-        case BOAT:
-        case CHICKEN:
-        case COW:
-        case HORSE:
-        case ITEM_FRAME:
-        case LEASH_HITCH:
-        case MINECART:
-        case MINECART_CHEST:
-        case MINECART_COMMAND:
-        case MINECART_FURNACE:
-        case MINECART_HOPPER:
-        case MINECART_MOB_SPAWNER:
-        case MINECART_TNT:
-        case MUSHROOM_COW:
-        case OCELOT:
-        case PAINTING:
-        case PIG:
-        case RABBIT:
-        case SHEEP:
-        case SNOWMAN:
-        case VILLAGER:
-        case WOLF:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    public boolean isInteractiveMaterialItem(Material material) {
-        switch (material) {
-        case MINECART:
-        case POWERED_MINECART:
-        case HOPPER_MINECART:
-        case EXPLOSIVE_MINECART:
-        case COMMAND_MINECART:
-        case BOAT:
-        case FLINT_AND_STEEL:
-        case WOOD_HOE:
-        case STONE_HOE:
-        case GOLD_HOE:
-        case IRON_HOE:
-        case DIAMOND_HOE:
-        case BOWL:
-        case BUCKET:
-        case SADDLE:
-        case INK_SACK:
-        case ENDER_PEARL:
-        case MONSTER_EGG:
-        case FIREBALL:
-        case ARMOR_STAND:
-        case LEASH:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    public boolean isInteractiveMaterialBlock(Material material) {
-        switch (material) {
-        case DISPENSER:
-        case DROPPER:
-        case NOTE_BLOCK:
-        case TNT:
-        case CHEST:
-        case TRAPPED_CHEST:
-        case WORKBENCH:
-        case SOIL:
-        case FURNACE:
-        case BURNING_FURNACE:
-        case LEVER:
-        case REDSTONE_ORE:
-        case STONE_BUTTON:
-        case WOOD_BUTTON:
-        case JUKEBOX:
-        case TRAP_DOOR:
-        case FENCE_GATE:
-        case DARK_OAK_FENCE_GATE:
-        case SPRUCE_FENCE_GATE:
-        case BIRCH_FENCE_GATE:
-        case ACACIA_FENCE_GATE:
-        case JUNGLE_FENCE_GATE:
-        case ENCHANTMENT_TABLE:
-        case ENDER_PORTAL_FRAME:
-        case DRAGON_EGG:
-        case ENDER_CHEST:
-        case COMMAND:
-        case BEACON:
-        case ANVIL:
-        case DAYLIGHT_DETECTOR:
-        case DAYLIGHT_DETECTOR_INVERTED:
-        case HOPPER:
-        case BED_BLOCK:
-        case BREWING_STAND:
-        case CAKE_BLOCK:
-        case DIODE_BLOCK_ON:
-        case DIODE_BLOCK_OFF:
-        case REDSTONE_COMPARATOR_ON:
-        case REDSTONE_COMPARATOR_OFF:
-        case WOODEN_DOOR:
-        case DARK_OAK_DOOR:
-        case ACACIA_DOOR:
-        case SPRUCE_DOOR:
-        case BIRCH_DOOR:
-        case JUNGLE_DOOR:
-        case WOOD_PLATE:
-        case STONE_PLATE:
-        case GOLD_PLATE:
-        case IRON_PLATE:
-            return true;
-        default:
-            return false;
         }
     }
 

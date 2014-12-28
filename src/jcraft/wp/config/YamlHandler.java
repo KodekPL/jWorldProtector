@@ -24,7 +24,7 @@ public abstract class YamlHandler {
         for (Field field : this.getClass().getDeclaredFields()) {
             field.setAccessible(true);
 
-            SaveField saveField = (SaveField) field.getAnnotation(SaveField.class);
+            SaveField saveField = field.getAnnotation(SaveField.class);
 
             if (saveField == null) {
                 continue;
@@ -51,7 +51,7 @@ public abstract class YamlHandler {
         for (Field field : this.getClass().getDeclaredFields()) {
             field.setAccessible(true);
 
-            SaveField saveField = (SaveField) field.getAnnotation(SaveField.class);
+            SaveField saveField = field.getAnnotation(SaveField.class);
 
             if (saveField == null) {
                 continue;

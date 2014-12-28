@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 public abstract class CommandHandler implements CommandExecutor {
 
-    private Map<String, Set<Method>> commands = new HashMap<String, Set<Method>>();
+    private final Map<String, Set<Method>> commands = new HashMap<String, Set<Method>>();
 
     public CommandHandler() {
         this.register();
@@ -25,7 +25,7 @@ public abstract class CommandHandler implements CommandExecutor {
             method.setAccessible(true);
 
             if (method.isAnnotationPresent(PluginCommand.class)) {
-                PluginCommand command = (PluginCommand) method.getAnnotation(PluginCommand.class);
+                PluginCommand command = method.getAnnotation(PluginCommand.class);
 
                 for (String alias : command.args()) {
                     Set<Method> cmds;
@@ -58,7 +58,7 @@ public abstract class CommandHandler implements CommandExecutor {
             PluginCommand command = null;
 
             for (Method cmdMethod : cmdMethods) {
-                command = (PluginCommand) cmdMethod.getAnnotation(PluginCommand.class);
+                command = cmdMethod.getAnnotation(PluginCommand.class);
 
                 if (command.requiresPlayer() && !(sender instanceof Player)) {
                     continue;
