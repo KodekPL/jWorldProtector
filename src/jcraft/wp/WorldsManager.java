@@ -55,6 +55,18 @@ public class WorldsManager {
         worlds.put(worldInst.getBukkitWorld().getName(), worldInst);
     }
 
+    public void reloadWorldConfigs() {
+        for (WorldInstance world : worlds.values()) {
+            world.getWorldSettings().load();
+        }
+    }
+
+    public void reloadWorldRegions() {
+        for (WorldInstance world : worlds.values()) {
+            world.getRegionContainer().load();
+        }
+    }
+
     public WorldInstance getWorldInstance(String worldName) {
         return worlds.get(worldName);
     }

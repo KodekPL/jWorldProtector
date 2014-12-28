@@ -31,6 +31,8 @@ permissions:
     default: op
   worldprotector.region.permission:
     default: op
+  worldprotector.region.flags:
+    default: op
   worldprotector.region.save:
     default: op
   worldprotector.region.load:

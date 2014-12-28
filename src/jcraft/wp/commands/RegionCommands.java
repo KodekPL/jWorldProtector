@@ -6,6 +6,7 @@ import jcraft.wp.ProtectorPlugin;
 import jcraft.wp.WorldInstance;
 import jcraft.wp.region.Region;
 import jcraft.wp.region.RegionPlayer;
+import jcraft.wp.region.flag.RegionFlag;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -15,13 +16,12 @@ import org.bukkit.util.BlockVector;
 
 public class RegionCommands extends CommandHandler {
 
-    // TODO Add flags commands
     // TODO Add perent commands
 
     @Override
     public void noArgsCommand(CommandSender sender, String[] args) {
         sender.sendMessage(ChatColor.YELLOW
-                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/flag/setparent/save/load> [args...]");
+                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/setflag/removeflag/setparent/save/load> [args...]");
     }
 
     private static final Pattern VALID_CHARACTERS = Pattern.compile("^[A-Za-z0-9_,'\\-\\+/]{1,}$");
@@ -641,6 +641,148 @@ public class RegionCommands extends CommandHandler {
         config.getRegionContainer().save();
 
         sender.sendMessage(ChatColor.GREEN + "Removed permission of region with name '" + regionName + "'.");
+    }
+
+    @PluginCommand(args = { "setflag" }, argsAmount = 4, requiresPlayer = true, permission = "worldprotector.region.flags", usage = "/region setflag <region_name> <flag_name> <flag_state> [world_name]")
+    public void onRegionSetFlag_Player(CommandSender sender, String[] args) {
+        final Player player = (Player) sender;
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(player.getWorld().getName());
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "Unexpected non-existing world!");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        final String flagName = args[2];
+        final RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+        if (flag == null) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flagName + "' does not exist.");
+            return;
+        }
+
+        final String flagState = args[3];
+
+        if (!flag.applyToRegion(region, flagState)) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flag.getName() + "' was not added to region correctly.");
+            return;
+        }
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Flag with name '" + flag.getName() + "' was added to region with name  '" + region.getName() + "'.");
+    }
+
+    @PluginCommand(args = { "setflag" }, argsAmount = 5, requiresPlayer = false, permission = "worldprotector.region.flags", usage = "/region setflag <region_name> <flag_name> <flag_state> <world_name>")
+    public void onRegionSetFlag_Console(CommandSender sender, String[] args) {
+        final String worldName = args[4];
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(worldName);
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "World with name '" + worldName + "' was not found.");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        final String flagName = args[2];
+        final RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+        if (flag == null) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flagName + "' does not exist.");
+            return;
+        }
+
+        final String flagState = args[3];
+
+        if (!flag.applyToRegion(region, flagState)) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flag.getName() + "' was not added to region correctly.");
+            return;
+        }
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Flag with name '" + flag.getName() + "' was added to region with name  '" + region.getName() + "'.");
+    }
+
+    @PluginCommand(args = { "removeflag" }, argsAmount = 3, requiresPlayer = true, permission = "worldprotector.region.flags", usage = "/region removeflag <region_name> <flag_name>")
+    public void onRegionRemoveFlag_Player(CommandSender sender, String[] args) {
+        final Player player = (Player) sender;
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(player.getWorld().getName());
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "Unexpected non-existing world!");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        final String flagName = args[2];
+        final RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+        if (flag == null) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flagName + "' does not exist.");
+            return;
+        }
+
+        region.removeFlag(flag);
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Flag with name '" + flag.getName() + "' was removed from region with name  '" + region.getName() + "'.");
+    }
+
+    @PluginCommand(args = { "removeflag" }, argsAmount = 4, requiresPlayer = true, permission = "worldprotector.region.flags", usage = "/region removeflag <region_name> <flag_name> <world_name>")
+    public void onRegionRemoveFlag_Console(CommandSender sender, String[] args) {
+        final String worldName = args[3];
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(worldName);
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "World with name '" + worldName + "' was not found.");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        final String flagName = args[2];
+        final RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+        if (flag == null) {
+            sender.sendMessage(ChatColor.RED + "Flag with name '" + flagName + "' does not exist.");
+            return;
+        }
+
+        region.removeFlag(flag);
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Flag with name '" + flag.getName() + "' was removed from region with name  '" + region.getName() + "'.");
     }
 
     @PluginCommand(args = { "save" }, argsAmount = 2, requiresPlayer = false, permission = "worldprotector.region.save", usage = "/region save <world>")

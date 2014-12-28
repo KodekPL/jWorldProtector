@@ -1,8 +1,13 @@
 package jcraft.wp.region;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+
+import jcraft.wp.region.flag.RegionFlag;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -17,9 +22,9 @@ public class Region {
     private String permission;
     private Set<RegionPlayer> owners;
     private Set<RegionPlayer> members;
+    private Map<RegionFlag, Object> flags;
 
     // TODO Parent
-    // TODO Flags
 
     public Region(String name, BlockVector min, BlockVector max) {
         this.name = name;
@@ -209,6 +214,38 @@ public class Region {
         this.permission = permission;
     }
 
+    public Map<RegionFlag, Object> getFlags() {
+        if (this.flags == null) {
+            this.flags = new HashMap<RegionFlag, Object>();
+        }
+
+        return this.flags;
+    }
+
+    public boolean hasFlag(RegionFlag flag) {
+        if (this.flags == null || this.flags.isEmpty()) {
+            return false;
+        }
+
+        return getFlags().containsKey(flag);
+    }
+
+    public Object getFlag(RegionFlag flag) {
+        if (this.flags == null || this.flags.isEmpty()) {
+            return null;
+        }
+
+        return getFlags().get(flag);
+    }
+
+    public void addFlag(RegionFlag flag, Object state) {
+        getFlags().put(flag, state);
+    }
+
+    public boolean removeFlag(RegionFlag flag) {
+        return getFlags().remove(flag) != null;
+    }
+
     public Set<Long> getHash() {
         final Set<Long> regionHash = new HashSet<Long>();
 
@@ -235,6 +272,12 @@ public class Region {
             return true;
         }
 
+        final Boolean buildFlag = (Boolean) this.getFlag(DefaultFlags.BUILD_FLAG);
+
+        if (buildFlag != null) {
+            return buildFlag;
+        }
+
         if ((this.getPermission() != null && player.hasPermission(this.getPermission())) || player.hasPermission("worldprotector.region.bypass")) {
             return true;
         }
@@ -259,8 +302,21 @@ public class Region {
             builder.append(ChatColor.RED).append("None").append('\n');
         }
 
+        builder.append(ChatColor.BLUE).append(" Flags: ");
+
+        if (!getFlags().isEmpty()) {
+            for (Entry<RegionFlag, Object> entry : getFlags().entrySet()) {
+                builder.append(ChatColor.YELLOW).append(entry.getKey().getName()).append('=').append(entry.getKey().stateToString(entry.getValue()))
+                        .append(", ");
+            }
+
+            builder.delete(builder.length() - 2, builder.length());
+            builder.append('\n');
+        } else {
+            builder.append(ChatColor.RED).append("None").append('\n');
+        }
+
         // TODO: Parent
-        // TODO: Flags
 
         builder.append(ChatColor.BLUE).append(" Owners: ");
 

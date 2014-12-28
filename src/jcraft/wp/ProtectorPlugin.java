@@ -10,6 +10,7 @@ import jcraft.wp.listener.EntityListener;
 import jcraft.wp.listener.PlayerListener;
 import jcraft.wp.listener.RegionListener;
 import jcraft.wp.listener.WorldListener;
+import jcraft.wp.region.flag.RegionFlagManager;
 import jcraft.wp.worldedit.WorldEditHandler;
 
 import org.bukkit.entity.Player;
@@ -21,6 +22,7 @@ public class ProtectorPlugin extends JavaPlugin {
 
     private static ProtectorPlugin plugin;
     private static WorldsManager worldsManager;
+    private static RegionFlagManager flagsManager;
     private static WorldEditHandler worldEditHandler;
 
     @Override
@@ -34,6 +36,8 @@ public class ProtectorPlugin extends JavaPlugin {
 
         WORLDS_DIR.mkdirs();
         REGIONS_DIR.mkdirs();
+
+        flagsManager = new RegionFlagManager();
 
         worldsManager = new WorldsManager();
         worldsManager.loadWorlds();
@@ -56,6 +60,10 @@ public class ProtectorPlugin extends JavaPlugin {
 
     public static WorldsManager getWorldsManager() {
         return worldsManager;
+    }
+
+    public static RegionFlagManager getRegionFlagManager() {
+        return flagsManager;
     }
 
     public static WorldEditHandler getWorldEdit() {

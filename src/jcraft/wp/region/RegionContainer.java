@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import jcraft.wp.ProtectorPlugin;
 import jcraft.wp.config.YamlHandler;
+import jcraft.wp.region.flag.RegionFlag;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -193,8 +196,11 @@ public class RegionContainer extends YamlHandler {
                 yaml.set(regionPath + ".members." + rPlayer.getUniqueId().toString() + ".playerName", rPlayer.getPlayerName());
             }
 
+            for (Entry<RegionFlag, Object> entry : region.getFlags().entrySet()) {
+                yaml.set(regionPath + ".flags." + entry.getKey().getName() + ".state", entry.getKey().stateToString(entry.getValue()));
+            }
+
             // TODO Parent
-            // TODO Flags
         }
 
         try {
@@ -259,6 +265,29 @@ public class RegionContainer extends YamlHandler {
                 }
             }
 
+            Map<RegionFlag, Object> flags = new HashMap<RegionFlag, Object>();
+            Set<String> flagsList = (yaml.contains(regionPath + ".flags") ? yaml.getConfigurationSection(regionPath + ".flags").getKeys(false) : null);
+
+            if (flagsList != null) {
+                for (String flagName : flagsList) {
+                    RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+                    if (flag == null) {
+                        continue;
+                    }
+
+                    String sState = yaml.getString(regionPath + ".flags." + flagName + ".state");
+
+                    Object flagState = flag.parseState(sState);
+
+                    if (flagState == null) {
+                        continue;
+                    }
+
+                    flags.put(flag, flagState);
+                }
+            }
+
             Region region = new Region(regionName, min, max);
 
             if (permission != null && permission.length() > 0) {
@@ -271,6 +300,10 @@ public class RegionContainer extends YamlHandler {
 
             if (!members.isEmpty()) {
                 region.getMembers().addAll(members);
+            }
+
+            if (!flags.isEmpty()) {
+                region.getFlags().putAll(flags);
             }
 
             this.addRegion(region);
