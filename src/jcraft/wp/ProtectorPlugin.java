@@ -8,6 +8,7 @@ import jcraft.wp.commands.RegionCommands;
 import jcraft.wp.listener.BlockListener;
 import jcraft.wp.listener.EntityListener;
 import jcraft.wp.listener.PlayerListener;
+import jcraft.wp.listener.RegionListener;
 import jcraft.wp.listener.WorldListener;
 import jcraft.wp.worldedit.WorldEditHandler;
 
@@ -43,6 +44,7 @@ public class ProtectorPlugin extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new BlockListener(), this);
         this.getServer().getPluginManager().registerEvents(new EntityListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        this.getServer().getPluginManager().registerEvents(new RegionListener(), this);
 
         this.getCommand("worldprotector").setExecutor(new ProtectorCommands());
         this.getCommand("region").setExecutor(new RegionCommands());

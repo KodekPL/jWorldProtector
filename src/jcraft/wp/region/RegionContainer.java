@@ -9,6 +9,7 @@ import jcraft.wp.config.YamlHandler;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
 public class RegionContainer extends YamlHandler {
@@ -61,6 +62,38 @@ public class RegionContainer extends YamlHandler {
 
     public int size() {
         return regions.size();
+    }
+
+    public boolean canInteract(Player player, double x, double y, double z) {
+        return canInteract(player, x, y, z);
+    }
+
+    public boolean canInteract(RegionInteraction type, Player player, double x, double y, double z) {
+        boolean canInteract = true;
+
+        for (Region region : regions) {
+            if (region.contains(x, y, z)) {
+                if (!region.canInteract(player)) {
+                    canInteract = false;
+                }
+            }
+        }
+
+        return canInteract;
+    }
+
+    public boolean canInteract(double x, double y, double z) {
+        return canInteract(RegionInteraction.NONE, x, y, z);
+    }
+
+    public boolean canInteract(RegionInteraction type, double x, double y, double z) {
+        for (Region region : regions) {
+            if (region.contains(x, y, z)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public String getList() {

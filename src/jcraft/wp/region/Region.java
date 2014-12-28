@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
 public class Region {
@@ -211,6 +212,22 @@ public class Region {
     public boolean contains(double x, double y, double z) {
         return x >= min.getBlockX() && x < max.getBlockX() + 1 && y >= min.getBlockY() && y < max.getBlockY() + 1 && z >= min.getBlockZ()
                 && z < max.getBlockZ() + 1;
+    }
+
+    public boolean canInteract(Player player) {
+        return canInteract(RegionInteraction.NONE, player);
+    }
+
+    public boolean canInteract(RegionInteraction type, Player player) {
+        if (this.isOwnerOrMember(player.getUniqueId())) {
+            return true;
+        }
+
+        if (this.getPermission() != null && player.hasPermission(this.getPermission())) {
+            return true;
+        }
+
+        return false;
     }
 
     public String getInfo() {
