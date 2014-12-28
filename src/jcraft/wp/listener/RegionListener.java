@@ -102,7 +102,7 @@ public class RegionListener implements Listener {
 
             if (!canInteract(RegionInteraction.BLOCK_PLACE, world, location.getX(), location.getY(), location.getZ())) {
                 @SuppressWarnings("deprecation")
-                final ItemStack dropItem = MaterialUtils.getBlockIntoItemStack(entity.getMaterial(), entity.getBlockData(), 1);
+                final ItemStack dropItem = MaterialUtils.getItemStackFromBlock(entity.getMaterial(), entity.getBlockData(), 1);
 
                 location.getWorld().dropItem(location, dropItem);
 

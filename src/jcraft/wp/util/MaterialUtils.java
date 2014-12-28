@@ -34,7 +34,7 @@ public class MaterialUtils {
         }
     }
 
-    public static ItemStack getBlockIntoItemStack(Material material, byte data, int amount) {
+    public static ItemStack getItemStackFromBlock(Material material, byte data, int amount) {
         switch (material) {
         case ANVIL:
             return new ItemStack(Material.ANVIL, amount, (short) (data >> 2));
