@@ -1,6 +1,7 @@
 package jcraft.wp.util;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 public class MaterialUtils {
 
@@ -33,6 +34,15 @@ public class MaterialUtils {
         }
     }
 
+    public static ItemStack getBlockIntoItemStack(Material material, byte data, int amount) {
+        switch (material) {
+        case ANVIL:
+            return new ItemStack(Material.ANVIL, amount, (short) (data >> 2));
+        default:
+            return new ItemStack(material, amount, data);
+        }
+    }
+
     public static boolean isInteractiveMaterialBlock(Material material) {
         switch (material) {
         case DISPENSER:
@@ -47,6 +57,7 @@ public class MaterialUtils {
         case BURNING_FURNACE:
         case LEVER:
         case REDSTONE_ORE:
+        case GLOWING_REDSTONE_ORE:
         case STONE_BUTTON:
         case WOOD_BUTTON:
         case JUKEBOX:
