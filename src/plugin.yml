@@ -35,6 +35,8 @@ permissions:
     default: op
   worldprotector.region.load:
     default: op
+  worldprotector.region.bypass:
+    default: op
 
 commands:
   worldprotector:

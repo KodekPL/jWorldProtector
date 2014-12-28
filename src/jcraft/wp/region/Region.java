@@ -235,7 +235,7 @@ public class Region {
             return true;
         }
 
-        if (this.getPermission() != null && player.hasPermission(this.getPermission())) {
+        if ((this.getPermission() != null && player.hasPermission(this.getPermission())) || player.hasPermission("worldprotector.region.bypass")) {
             return true;
         }
 
