@@ -2,7 +2,9 @@ package jcraft.wp.region;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import jcraft.wp.config.YamlHandler;
@@ -18,11 +20,11 @@ public class RegionContainer extends YamlHandler {
         super(file);
     }
 
-    // TODO: Redo the way regions are get
-    private final Set<Region> regions = new HashSet<Region>();
+    private final Set<Region> regionsList = new HashSet<Region>();
+    private final Map<Long, Set<Region>> regionsFragments = new HashMap<Long, Set<Region>>();
 
     public boolean hasRegion(String name) {
-        for (Region region : regions) {
+        for (Region region : regionsList) {
             if (region.getName().equalsIgnoreCase(name)) {
                 return true;
             }
@@ -32,7 +34,7 @@ public class RegionContainer extends YamlHandler {
     }
 
     public Region getRegion(String name) {
-        for (Region region : regions) {
+        for (Region region : regionsList) {
             if (region.getName().equalsIgnoreCase(name)) {
                 return region;
             }
@@ -42,26 +44,64 @@ public class RegionContainer extends YamlHandler {
     }
 
     public void addRegion(Region region) {
-        regions.add(region);
+        final Set<Long> regionHash = region.getHash();
+
+        for (Long hash : regionHash) {
+            if (!regionsFragments.containsKey(hash)) {
+                regionsFragments.put(hash, new HashSet<Region>());
+            }
+
+            regionsFragments.get(hash).add(region);
+        }
+
+        regionsList.add(region);
     }
 
     public boolean removeRegion(String name) {
-        for (Region region : regions) {
+        Region removeRegion = null;
+
+        for (Region region : regionsList) {
             if (region.getName().equalsIgnoreCase(name)) {
-                regions.remove(region);
-                return true;
+                removeRegion = region;
+                break;
             }
         }
 
-        return false;
+        if (removeRegion == null) {
+            return false;
+        }
+
+        final long regionHash = hashPosition(removeRegion.getMinPoint().getBlockX() + 1, removeRegion.getMinPoint().getBlockZ() + 1);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return false;
+        }
+
+        regions.remove(removeRegion);
+        regionsFragments.put(regionHash, regions);
+        regionsList.remove(removeRegion);
+
+        return true;
     }
 
-    public boolean removeRegion(Region region) {
-        return regions.remove(region);
+    public boolean removeRegion(Region removeRegion) {
+        final long regionHash = hashPosition(removeRegion.getMinPoint().getBlockX() + 1, removeRegion.getMinPoint().getBlockZ() + 1);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return false;
+        }
+
+        regions.remove(removeRegion);
+        regionsFragments.put(regionHash, regions);
+        regionsList.remove(removeRegion);
+
+        return true;
     }
 
     public int size() {
-        return regions.size();
+        return regionsList.size();
     }
 
     public boolean canInteract(Player player, double x, double y, double z) {
@@ -69,6 +109,13 @@ public class RegionContainer extends YamlHandler {
     }
 
     public boolean canInteract(RegionInteraction type, Player player, double x, double y, double z) {
+        final long regionHash = hashPosition((int) x, (int) z);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return true;
+        }
+
         boolean canInteract = true;
 
         for (Region region : regions) {
@@ -87,6 +134,13 @@ public class RegionContainer extends YamlHandler {
     }
 
     public boolean canInteract(RegionInteraction type, double x, double y, double z) {
+        final long regionHash = hashPosition((int) x, (int) z);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return true;
+        }
+
         for (Region region : regions) {
             if (region.contains(x, y, z)) {
                 return false;
@@ -101,8 +155,8 @@ public class RegionContainer extends YamlHandler {
 
         builder.append(ChatColor.BLUE).append("Regions: ").append(ChatColor.YELLOW);
 
-        if (!regions.isEmpty()) {
-            for (Region region : regions) {
+        if (!regionsList.isEmpty()) {
+            for (Region region : regionsList) {
                 builder.append(region.getName()).append(", ");
             }
 
@@ -118,7 +172,7 @@ public class RegionContainer extends YamlHandler {
     public void save() {
         final YamlConfiguration yaml = new YamlConfiguration();
 
-        for (Region region : regions) {
+        for (Region region : regionsList) {
             String regionPath = "regions." + region.getName();
 
             yaml.set(regionPath + ".min.x", region.getMinPoint().getBlockX());
@@ -152,7 +206,8 @@ public class RegionContainer extends YamlHandler {
 
     @Override
     public void load() {
-        regions.clear();
+        regionsList.clear();
+        regionsFragments.clear();
 
         final YamlConfiguration yaml = YamlConfiguration.loadConfiguration(this.getFile());
 
@@ -218,8 +273,21 @@ public class RegionContainer extends YamlHandler {
                 region.getMembers().addAll(members);
             }
 
-            regions.add(region);
+            this.addRegion(region);
         }
+    }
+
+    public static long hashPosition(int x, int z) {
+        int regionX = x >> 8; // x / 256
+        int regionZ = z >> 8; // z / 256
+
+        long hash = 0xBB40E64DA205B064L;
+        final long modifier = 7664345821815920749L;
+
+        hash = (hash * modifier) ^ (regionX & 0xff);
+        hash = (hash * modifier) ^ (regionZ & 0xff);
+
+        return hash;
     }
 
 }

@@ -209,6 +209,18 @@ public class Region {
         this.permission = permission;
     }
 
+    public Set<Long> getHash() {
+        final Set<Long> regionHash = new HashSet<Long>();
+
+        for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
+            for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
+                regionHash.add(RegionContainer.hashPosition(x, z));
+            }
+        }
+
+        return regionHash;
+    }
+
     public boolean contains(double x, double y, double z) {
         return x >= min.getBlockX() && x < max.getBlockX() + 1 && y >= min.getBlockY() && y < max.getBlockY() + 1 && z >= min.getBlockZ()
                 && z < max.getBlockZ() + 1;
