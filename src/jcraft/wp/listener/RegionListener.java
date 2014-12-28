@@ -3,6 +3,7 @@ package jcraft.wp.listener;
 import jcraft.wp.ProtectorPlugin;
 import jcraft.wp.WorldInstance;
 import jcraft.wp.region.RegionInteraction;
+import jcraft.wp.util.MetadataUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -215,9 +216,7 @@ public class RegionListener implements Listener {
         final boolean result = config.getRegionContainer().canInteract(type, player, x, y, z);
 
         if (!result) {
-            // TODO: Allow to change message in config
-            // TODO: Add delay to message print to avoid message spam and double messages
-            player.sendMessage(ChatColor.RED + "Hey! " + ChatColor.GRAY + "Interactions in this region are blocked (cuboid).");
+            sendWarningMessage(player);
         }
 
         return result;
@@ -231,6 +230,18 @@ public class RegionListener implements Listener {
         }
 
         return config.getRegionContainer().canInteract(type, x, y, z);
+    }
+
+    public void sendWarningMessage(Player player) {
+        Long lastTime = (Long) MetadataUtil.get(player, "lastWarningMessage");
+
+        if ((lastTime == null) || (System.currentTimeMillis() - lastTime.longValue() >= 500L)) {
+            // TODO: Allow to change message in config
+            player.sendMessage(ChatColor.RED + "Hey! " + ChatColor.GRAY + "Interactions in this region are blocked (cuboid).");
+
+            MetadataUtil.set(player, "lastWarningMessage", Long.valueOf(System.currentTimeMillis()));
+        }
+
     }
 
     public Entity getSourceEntity(Entity entity) {
