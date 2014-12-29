@@ -46,6 +46,24 @@ public class RegionContainer extends YamlHandler {
         return null;
     }
 
+    public Set<Region> getRegions(double x, double y, double z) {
+        final Set<Region> foundRegions = new HashSet<Region>();
+        final long regionHash = hashPosition((int) x, (int) z);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return foundRegions;
+        }
+
+        for (Region region : regions) {
+            if (region.contains(x, y, z)) {
+                foundRegions.add(region);
+            }
+        }
+
+        return foundRegions;
+    }
+
     public void addRegion(Region region) {
         final Set<Long> regionHash = region.getHash();
 

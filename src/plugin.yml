@@ -35,6 +35,8 @@ permissions:
     default: op
   worldprotector.region.parents:
     default: op
+  worldprotector.region.wand:
+    default: op
   worldprotector.region.save:
     default: op
   worldprotector.region.load:
