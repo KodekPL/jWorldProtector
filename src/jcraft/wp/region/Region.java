@@ -23,8 +23,7 @@ public class Region {
     private Set<RegionPlayer> owners;
     private Set<RegionPlayer> members;
     private Map<RegionFlag, Object> flags;
-
-    // TODO Parent
+    private Region parent;
 
     public Region(String name, BlockVector min, BlockVector max) {
         this.name = name;
@@ -96,12 +95,18 @@ public class Region {
     }
 
     public boolean isOwner(String playerName) {
-        if (owners == null || owners.isEmpty()) {
-            return false;
+        if (owners != null && !owners.isEmpty()) {
+            for (RegionPlayer player : owners) {
+                if (player.getPlayerName().equalsIgnoreCase(playerName)) {
+                    return true;
+                }
+            }
         }
 
-        for (RegionPlayer player : owners) {
-            if (player.getPlayerName().equalsIgnoreCase(playerName)) {
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            if (parentRegion.isOwner(playerName)) {
                 return true;
             }
         }
@@ -110,12 +115,18 @@ public class Region {
     }
 
     public boolean isOwner(UUID playerUUID) {
-        if (owners == null || owners.isEmpty()) {
-            return false;
+        if (owners != null && !owners.isEmpty()) {
+            for (RegionPlayer player : owners) {
+                if (player.getUniqueId().equals(playerUUID)) {
+                    return true;
+                }
+            }
         }
 
-        for (RegionPlayer player : owners) {
-            if (player.getUniqueId().equals(playerUUID)) {
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            if (parentRegion.isOwner(playerUUID)) {
                 return true;
             }
         }
@@ -167,12 +178,18 @@ public class Region {
     }
 
     public boolean isMember(String playerName) {
-        if (members == null || members.isEmpty()) {
-            return false;
+        if (members != null && !members.isEmpty()) {
+            for (RegionPlayer player : members) {
+                if (player.getPlayerName().equalsIgnoreCase(playerName)) {
+                    return true;
+                }
+            }
         }
 
-        for (RegionPlayer player : members) {
-            if (player.getPlayerName().equalsIgnoreCase(playerName)) {
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            if (parentRegion.isMember(playerName)) {
                 return true;
             }
         }
@@ -181,12 +198,18 @@ public class Region {
     }
 
     public boolean isMember(UUID playerUUID) {
-        if (members == null || members.isEmpty()) {
-            return false;
+        if (members != null && !members.isEmpty()) {
+            for (RegionPlayer player : members) {
+                if (player.getUniqueId().equals(playerUUID)) {
+                    return true;
+                }
+            }
         }
 
-        for (RegionPlayer player : members) {
-            if (player.getUniqueId().equals(playerUUID)) {
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            if (parentRegion.isMember(playerUUID)) {
                 return true;
             }
         }
@@ -206,8 +229,22 @@ public class Region {
         return this.permission;
     }
 
-    public boolean hasPermission() {
-        return this.permission == null || this.permission.length() == 0;
+    public boolean hasPermission(Player player) {
+        if (this.permission != null && this.permission.length() > 0) {
+            if (player.hasPermission(this.permission)) {
+                return true;
+            }
+        }
+
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            if (parentRegion.hasPermission(player)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void setPermission(String permission) {
@@ -246,6 +283,23 @@ public class Region {
         return getFlags().remove(flag) != null;
     }
 
+    public Region getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Region region) {
+        if (region == null) {
+            this.parent = null;
+            return;
+        }
+
+        if (this.equals(region)) {
+            return;
+        }
+
+        this.parent = region;
+    }
+
     public Set<Long> getHash() {
         final Set<Long> regionHash = new HashSet<Long>();
 
@@ -263,22 +317,43 @@ public class Region {
                 && z < max.getBlockZ() + 1;
     }
 
-    public boolean canInteract(Player player) {
-        return canInteract(RegionInteraction.NONE, player);
-    }
-
-    public boolean canInteract(RegionInteraction type, Player player) {
-        if (this.isOwnerOrMember(player.getUniqueId())) {
-            return true;
-        }
-
+    public Boolean canBuildFlag() {
         final Boolean buildFlag = (Boolean) this.getFlag(DefaultFlags.BUILD_FLAG);
 
         if (buildFlag != null) {
             return buildFlag;
         }
 
-        if ((this.getPermission() != null && player.hasPermission(this.getPermission())) || player.hasPermission("worldprotector.region.bypass")) {
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            final Boolean parentBuildFlag = parentRegion.canBuildFlag();
+
+            if (parentBuildFlag != null) {
+                return parentBuildFlag;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean canInteract(Player player) {
+        return canInteract(RegionInteraction.NONE, player);
+    }
+
+    public boolean canInteract(RegionInteraction type, Player player) {
+        // Build flag
+        final Boolean buildFlag = this.canBuildFlag();
+
+        if (buildFlag != null) {
+            return buildFlag;
+        }
+
+        if (this.isOwnerOrMember(player.getUniqueId())) {
+            return true;
+        }
+
+        if (this.hasPermission(player) || player.hasPermission("worldprotector.region.bypass")) {
             return true;
         }
 
@@ -316,7 +391,13 @@ public class Region {
             builder.append(ChatColor.RED).append("None").append('\n');
         }
 
-        // TODO: Parent
+        builder.append(ChatColor.BLUE).append(" Parent: ");
+
+        if (this.getParent() != null) {
+            builder.append(ChatColor.YELLOW).append(this.getParent().getName()).append('\n');
+        } else {
+            builder.append(ChatColor.RED).append("None").append('\n');
+        }
 
         builder.append(ChatColor.BLUE).append(" Owners: ");
 

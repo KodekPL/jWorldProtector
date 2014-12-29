@@ -16,12 +16,10 @@ import org.bukkit.util.BlockVector;
 
 public class RegionCommands extends CommandHandler {
 
-    // TODO Add perent commands
-
     @Override
     public void noArgsCommand(CommandSender sender, String[] args) {
         sender.sendMessage(ChatColor.YELLOW
-                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/setflag/removeflag/setparent/save/load> [args...]");
+                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/setflag/removeflag/setparent/removeparent/save/load> [args...]");
     }
 
     private static final Pattern VALID_CHARACTERS = Pattern.compile("^[A-Za-z0-9_,'\\-\\+/]{1,}$");
@@ -594,6 +592,89 @@ public class RegionCommands extends CommandHandler {
         config.getRegionContainer().save();
 
         sender.sendMessage(ChatColor.GREEN + "Flag with name '" + flag.getName() + "' was removed from region with name  '" + region.getName() + "'.");
+    }
+
+    @PluginCommand(args = { "setparent" }, minArgs = 3, maxArgs = 4, requiresPlayer = false, permission = "worldprotector.region.parents", usage = "/region setparent <region_name> <parent_name> [world_name]")
+    public void onRegionSetParent(CommandSender sender, String[] args) {
+        final String worldName;
+
+        if (args.length == 4) {
+            worldName = args[3];
+        } else if (sender instanceof Player) {
+            final Player player = (Player) sender;
+
+            worldName = player.getWorld().getName();
+        } else {
+            sender.sendMessage(ChatColor.RED + "World name is missing!");
+            return;
+        }
+
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(worldName);
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "World with name '" + worldName + "' was not found.");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        final String parentName = args[2];
+        final Region parentRegion = config.getRegionContainer().getRegion(parentName);
+
+        if (parentRegion == null) {
+            sender.sendMessage(ChatColor.RED + "Parent region with name '" + parentName + "' does not exist.");
+            return;
+        }
+
+        region.setParent(parentRegion);
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Region with name '" + region.getName() + "' has now parent of region with name  '"
+                + parentRegion.getName() + "'.");
+    }
+
+    @PluginCommand(args = { "removeparent" }, minArgs = 2, maxArgs = 3, requiresPlayer = false, permission = "worldprotector.region.parents", usage = "/region removeparent <region_name> [world_name]")
+    public void onRegionRemoveParent(CommandSender sender, String[] args) {
+        final String worldName;
+
+        if (args.length == 3) {
+            worldName = args[2];
+        } else if (sender instanceof Player) {
+            final Player player = (Player) sender;
+
+            worldName = player.getWorld().getName();
+        } else {
+            sender.sendMessage(ChatColor.RED + "World name is missing!");
+            return;
+        }
+
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(worldName);
+
+        if (config == null) {
+            sender.sendMessage(ChatColor.RED + "World with name '" + worldName + "' was not found.");
+            return;
+        }
+
+        final String regionName = args[1];
+        final Region region = config.getRegionContainer().getRegion(regionName);
+
+        if (region == null) {
+            sender.sendMessage(ChatColor.RED + "Region with name '" + regionName + "' does not exist.");
+            return;
+        }
+
+        region.setParent(null);
+
+        config.getRegionContainer().save();
+
+        sender.sendMessage(ChatColor.GREEN + "Removed parent from region with name '" + region.getName() + "'.");
     }
 
     @PluginCommand(args = { "save" }, minArgs = 2, maxArgs = 2, requiresPlayer = false, permission = "worldprotector.region.save", usage = "/region save <world>")

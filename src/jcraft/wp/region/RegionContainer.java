@@ -83,6 +83,13 @@ public class RegionContainer extends YamlHandler {
 
         regions.remove(removeRegion);
         regionsFragments.put(regionHash, regions);
+
+        for (Region region : regionsList) {
+            if (region.getParent() != null && region.getParent().equals(removeRegion)) {
+                region.setParent(null);
+            }
+        }
+
         regionsList.remove(removeRegion);
 
         return true;
@@ -98,6 +105,13 @@ public class RegionContainer extends YamlHandler {
 
         regions.remove(removeRegion);
         regionsFragments.put(regionHash, regions);
+
+        for (Region region : regionsList) {
+            if (region.getParent() != null && region.getParent().equals(removeRegion)) {
+                region.setParent(null);
+            }
+        }
+
         regionsList.remove(removeRegion);
 
         return true;
@@ -119,17 +133,15 @@ public class RegionContainer extends YamlHandler {
             return true;
         }
 
-        boolean canInteract = true;
-
         for (Region region : regions) {
             if (region.contains(x, y, z)) {
-                if (!region.canInteract(player)) {
-                    canInteract = false;
+                if (!region.canInteract(type, player)) {
+                    return false;
                 }
             }
         }
 
-        return canInteract;
+        return true;
     }
 
     public boolean canInteract(double x, double y, double z) {
@@ -188,6 +200,8 @@ public class RegionContainer extends YamlHandler {
 
             yaml.set(regionPath + ".permission", region.getPermission());
 
+            yaml.set(regionPath + ".parent", ((region.getParent() != null) ? region.getParent().getName() : null));
+
             for (RegionPlayer rPlayer : region.getOwners()) {
                 yaml.set(regionPath + ".owners." + rPlayer.getUniqueId().toString() + ".playerName", rPlayer.getPlayerName());
             }
@@ -200,7 +214,6 @@ public class RegionContainer extends YamlHandler {
                 yaml.set(regionPath + ".flags." + entry.getKey().getName() + ".state", entry.getKey().stateToString(entry.getValue()));
             }
 
-            // TODO Parent
         }
 
         try {
@@ -224,90 +237,143 @@ public class RegionContainer extends YamlHandler {
         final Set<String> regionNames = yaml.getConfigurationSection("regions").getKeys(false);
 
         for (String regionName : regionNames) {
-            String regionPath = "regions." + regionName;
+            Region region = loadRegion(regionName, yaml);
 
-            int minX = yaml.getInt(regionPath + ".min.x");
-            int minY = yaml.getInt(regionPath + ".min.y");
-            int minZ = yaml.getInt(regionPath + ".min.z");
-
-            BlockVector min = new BlockVector(minX, minY, minZ);
-
-            int maxX = yaml.getInt(regionPath + ".max.x");
-            int maxY = yaml.getInt(regionPath + ".max.y");
-            int maxZ = yaml.getInt(regionPath + ".max.z");
-
-            BlockVector max = new BlockVector(maxX, maxY, maxZ);
-
-            String permission = yaml.getString(regionPath + ".permission");
-
-            Set<RegionPlayer> owners = new HashSet<RegionPlayer>();
-
-            Set<String> ownersList = (yaml.contains(regionPath + ".owners") ? yaml.getConfigurationSection(regionPath + ".owners").getKeys(false)
-                    : null);
-
-            if (ownersList != null) {
-                for (String ownerUUID : ownersList) {
-                    String ownerName = yaml.getString(regionPath + ".owners." + ownerUUID + ".playerName");
-
-                    owners.add(new RegionPlayer(ownerName, ownerUUID));
-                }
+            if (region == null) {
+                continue;
             }
 
-            Set<RegionPlayer> members = new HashSet<RegionPlayer>();
-            Set<String> membersList = (yaml.contains(regionPath + ".members") ? yaml.getConfigurationSection(regionPath + ".members").getKeys(false)
-                    : null);
-
-            if (membersList != null) {
-                for (String memberUUID : membersList) {
-                    String memberName = yaml.getString(regionPath + ".members." + memberUUID + ".playerName");
-
-                    members.add(new RegionPlayer(memberName, memberUUID));
-                }
-            }
-
-            Map<RegionFlag, Object> flags = new HashMap<RegionFlag, Object>();
-            Set<String> flagsList = (yaml.contains(regionPath + ".flags") ? yaml.getConfigurationSection(regionPath + ".flags").getKeys(false) : null);
-
-            if (flagsList != null) {
-                for (String flagName : flagsList) {
-                    RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
-
-                    if (flag == null) {
-                        continue;
-                    }
-
-                    String sState = yaml.getString(regionPath + ".flags." + flagName + ".state");
-
-                    Object flagState = flag.parseState(sState);
-
-                    if (flagState == null) {
-                        continue;
-                    }
-
-                    flags.put(flag, flagState);
-                }
-            }
-
-            Region region = new Region(regionName, min, max);
-
-            if (permission != null && permission.length() > 0) {
-                region.setPermission(permission);
-            }
-
-            if (!owners.isEmpty()) {
-                region.getOwners().addAll(owners);
-            }
-
-            if (!members.isEmpty()) {
-                region.getMembers().addAll(members);
-            }
-
-            if (!flags.isEmpty()) {
-                region.getFlags().putAll(flags);
+            if (this.hasRegion(region.getName())) {
+                // If region is already loaded, skip it
+                continue;
             }
 
             this.addRegion(region);
         }
+    }
+
+    private Region loadRegion(String regionName, YamlConfiguration yaml) {
+        final String regionPath = "regions." + regionName;
+
+        if (!yaml.contains(regionPath)) {
+            return null;
+        }
+
+        // Min point
+
+        int minX = yaml.getInt(regionPath + ".min.x");
+        int minY = yaml.getInt(regionPath + ".min.y");
+        int minZ = yaml.getInt(regionPath + ".min.z");
+
+        BlockVector min = new BlockVector(minX, minY, minZ);
+
+        // Max point
+
+        int maxX = yaml.getInt(regionPath + ".max.x");
+        int maxY = yaml.getInt(regionPath + ".max.y");
+        int maxZ = yaml.getInt(regionPath + ".max.z");
+
+        BlockVector max = new BlockVector(maxX, maxY, maxZ);
+
+        // Permission
+
+        String permission = yaml.getString(regionPath + ".permission");
+
+        // Parent
+
+        String parentName = yaml.getString(regionPath + ".parent");
+        Region parentRegion = null;
+
+        if (parentName != null) {
+            parentRegion = this.getRegion(parentName); // Try to get parent region
+
+            if (parentRegion == null) { // Region is not loaded
+                parentRegion = loadRegion(parentName, yaml); // Try loading
+            }
+
+            if (parentRegion != null) {
+                this.addRegion(parentRegion); // If loaded parent region, add it
+            }
+        }
+
+        // Owners
+
+        Set<RegionPlayer> owners = new HashSet<RegionPlayer>();
+
+        Set<String> ownersList = (yaml.contains(regionPath + ".owners") ? yaml.getConfigurationSection(regionPath + ".owners").getKeys(false) : null);
+
+        if (ownersList != null) {
+            for (String ownerUUID : ownersList) {
+                String ownerName = yaml.getString(regionPath + ".owners." + ownerUUID + ".playerName");
+
+                owners.add(new RegionPlayer(ownerName, ownerUUID));
+            }
+        }
+
+        // Members
+
+        Set<RegionPlayer> members = new HashSet<RegionPlayer>();
+        Set<String> membersList = (yaml.contains(regionPath + ".members") ? yaml.getConfigurationSection(regionPath + ".members").getKeys(false)
+                : null);
+
+        if (membersList != null) {
+            for (String memberUUID : membersList) {
+                String memberName = yaml.getString(regionPath + ".members." + memberUUID + ".playerName");
+
+                members.add(new RegionPlayer(memberName, memberUUID));
+            }
+        }
+
+        // Flags
+
+        Map<RegionFlag, Object> flags = new HashMap<RegionFlag, Object>();
+        Set<String> flagsList = (yaml.contains(regionPath + ".flags") ? yaml.getConfigurationSection(regionPath + ".flags").getKeys(false) : null);
+
+        if (flagsList != null) {
+            for (String flagName : flagsList) {
+                RegionFlag flag = ProtectorPlugin.getRegionFlagManager().getFlag(flagName);
+
+                if (flag == null) {
+                    continue;
+                }
+
+                String sState = yaml.getString(regionPath + ".flags." + flagName + ".state");
+
+                Object flagState = flag.parseState(sState);
+
+                if (flagState == null) {
+                    continue;
+                }
+
+                flags.put(flag, flagState);
+            }
+        }
+
+        // Setup
+
+        Region region = new Region(regionName, min, max);
+
+        if (permission != null && permission.length() > 0) {
+            region.setPermission(permission);
+        }
+
+        if (parentRegion != null) {
+            region.setParent(parentRegion);
+        }
+
+        if (!owners.isEmpty()) {
+            region.getOwners().addAll(owners);
+        }
+
+        if (!members.isEmpty()) {
+            region.getMembers().addAll(members);
+        }
+
+        if (!flags.isEmpty()) {
+            region.getFlags().putAll(flags);
+        }
+
+        return region;
     }
 
     public static long hashPosition(int x, int z) {
