@@ -7,6 +7,8 @@ import jcraft.wp.WorldInstance;
 import jcraft.wp.region.Region;
 import jcraft.wp.region.RegionPlayer;
 import jcraft.wp.region.flag.RegionFlag;
+import jcraft.wp.task.AddOfflineMemberToRegionTask;
+import jcraft.wp.task.AddOfflineOwnerToRegionTask;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -257,17 +259,6 @@ public class RegionCommands extends CommandHandler {
             return;
         }
 
-        // TODO: Allow to add offline players
-
-        final String playerName = args[1];
-        final Player onlinePlayer = ProtectorPlugin.getOnlinePlayer(playerName);
-
-        if (onlinePlayer == null) {
-            sender.sendMessage(ChatColor.RED + "Player with name '" + playerName + "' is not online.");
-            sender.sendMessage(ChatColor.YELLOW + "Support for offline players will be added soon.");
-            return;
-        }
-
         final String regionName = args[2];
         final Region region = config.getRegionContainer().getRegion(regionName);
 
@@ -276,12 +267,21 @@ public class RegionCommands extends CommandHandler {
             return;
         }
 
-        region.addOwner(new RegionPlayer(onlinePlayer));
+        final String playerName = args[1];
+        final Player onlinePlayer = ProtectorPlugin.getOnlinePlayer(playerName);
 
-        config.getRegionContainer().save();
+        if (onlinePlayer != null) {
+            region.addOwner(new RegionPlayer(onlinePlayer));
 
-        sender.sendMessage(ChatColor.GREEN + "Player with name '" + onlinePlayer.getName() + "' has been added to region with name '"
-                + region.getName() + "'.");
+            config.getRegionContainer().save();
+
+            sender.sendMessage(ChatColor.GREEN + "Player with name '" + onlinePlayer.getName() + "' has been added to region with name '"
+                    + region.getName() + "'.");
+        } else {
+            new AddOfflineOwnerToRegionTask(sender, playerName, config, region);
+
+            sender.sendMessage(ChatColor.YELLOW + "Fetching UUID of player with name '" + playerName + "'...");
+        }
     }
 
     @PluginCommand(args = { "removeowner", "deleteowner" }, minArgs = 3, maxArgs = 4, requiresPlayer = false, permission = "worldprotector.region.owners", usage = "/region removeowner <player_name> <region_name> [world]")
@@ -351,17 +351,6 @@ public class RegionCommands extends CommandHandler {
             return;
         }
 
-        // TODO: Allow to add offline players
-
-        final String playerName = args[1];
-        final Player onlinePlayer = ProtectorPlugin.getOnlinePlayer(playerName);
-
-        if (onlinePlayer == null) {
-            sender.sendMessage(ChatColor.RED + "Player with name '" + playerName + "' is not online.");
-            sender.sendMessage(ChatColor.YELLOW + "Support for offline players will be added soon.");
-            return;
-        }
-
         final String regionName = args[2];
         final Region region = config.getRegionContainer().getRegion(regionName);
 
@@ -370,12 +359,21 @@ public class RegionCommands extends CommandHandler {
             return;
         }
 
-        region.addMember(new RegionPlayer(onlinePlayer));
+        final String playerName = args[1];
+        final Player onlinePlayer = ProtectorPlugin.getOnlinePlayer(playerName);
 
-        config.getRegionContainer().save();
+        if (onlinePlayer != null) {
+            region.addMember(new RegionPlayer(onlinePlayer));
 
-        sender.sendMessage(ChatColor.GREEN + "Player with name '" + onlinePlayer.getName() + "' has been added to region with name '"
-                + region.getName() + "'.");
+            config.getRegionContainer().save();
+
+            sender.sendMessage(ChatColor.GREEN + "Player with name '" + onlinePlayer.getName() + "' has been added to region with name '"
+                    + region.getName() + "'.");
+        } else {
+            new AddOfflineMemberToRegionTask(sender, playerName, config, region);
+
+            sender.sendMessage(ChatColor.YELLOW + "Fetching UUID of player with name '" + playerName + "'...");
+        }
     }
 
     @PluginCommand(args = { "removemember", "deletemember" }, minArgs = 3, maxArgs = 4, requiresPlayer = false, permission = "worldprotector.region.members", usage = "/region removemember <player_name> <region_name> [world_name]")

@@ -6,8 +6,6 @@ import org.bukkit.entity.Player;
 
 public class RegionPlayer {
 
-    // TODO: Allow to get profiles only with name by fetching player uuid from mojang
-
     private final String playerName;
     private final UUID playerUUID;
 
