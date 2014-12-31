@@ -7,7 +7,6 @@ import jcraft.wp.util.EntityUtils;
 import jcraft.wp.util.MaterialUtils;
 import jcraft.wp.util.MetadataUtil;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -256,8 +255,7 @@ public class RegionListener implements Listener {
         final Long lastTime = (Long) MetadataUtil.get(player, "lastWarningMessage");
 
         if (lastTime == null || System.currentTimeMillis() - lastTime.longValue() >= 500L) {
-            // TODO: Allow to change message in config
-            player.sendMessage(ChatColor.RED + "Hey! " + ChatColor.GRAY + "Interactions in this region are blocked (cuboid).");
+            player.sendMessage(ProtectorPlugin.getPluginConfig().warningMessage);
 
             MetadataUtil.set(player, "lastWarningMessage", Long.valueOf(System.currentTimeMillis()));
         }

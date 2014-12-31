@@ -5,6 +5,7 @@ import java.util.logging.Level;
 
 import jcraft.wp.commands.ProtectorCommands;
 import jcraft.wp.commands.RegionCommands;
+import jcraft.wp.config.PluginConfig;
 import jcraft.wp.listener.BlockListener;
 import jcraft.wp.listener.EntityListener;
 import jcraft.wp.listener.PlayerListener;
@@ -13,14 +14,16 @@ import jcraft.wp.listener.WorldListener;
 import jcraft.wp.region.flag.RegionFlagManager;
 import jcraft.wp.worldedit.WorldEditHandler;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ProtectorPlugin extends JavaPlugin {
 
-    public static File WORLDS_DIR, REGIONS_DIR;
+    public static File CONFIG_FILE, WORLDS_DIR, REGIONS_DIR;
 
     private static ProtectorPlugin plugin;
+    private static PluginConfig pluginConfig;
     private static WorldsManager worldsManager;
     private static RegionFlagManager flagsManager;
     private static WorldEditHandler worldEditHandler;
@@ -29,6 +32,7 @@ public class ProtectorPlugin extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
+        CONFIG_FILE = new File(this.getDataFolder(), "config.yml");
         WORLDS_DIR = new File(this.getDataFolder(), "worlds");
         REGIONS_DIR = new File(this.getDataFolder(), "regions");
 
@@ -36,6 +40,11 @@ public class ProtectorPlugin extends JavaPlugin {
 
         WORLDS_DIR.mkdirs();
         REGIONS_DIR.mkdirs();
+
+        pluginConfig = new PluginConfig(CONFIG_FILE);
+
+        pluginConfig.load();
+        pluginConfig.save();
 
         flagsManager = new RegionFlagManager();
 
@@ -56,6 +65,10 @@ public class ProtectorPlugin extends JavaPlugin {
 
     public static ProtectorPlugin getPlugin() {
         return plugin;
+    }
+
+    public static PluginConfig getPluginConfig() {
+        return pluginConfig;
     }
 
     public static WorldsManager getWorldsManager() {
@@ -82,6 +95,16 @@ public class ProtectorPlugin extends JavaPlugin {
         }
 
         return null;
+    }
+
+    public boolean canInteract(Player player, Location location) {
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(location.getWorld().getName());
+
+        if (config == null) {
+            return true;
+        }
+
+        return config.getRegionContainer().canInteract(player, location.getX(), location.getY(), location.getZ());
     }
 
 }

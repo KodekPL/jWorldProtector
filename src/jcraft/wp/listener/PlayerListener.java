@@ -37,8 +37,9 @@ public class PlayerListener implements Listener {
                 }
             }
         } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            // TODO: Allow to change wand in config
-            if (player.getItemInHand().getType() == Material.WOOD_AXE && player.hasPermission("worldprotector.region.wand")) {
+            final Material wandMaterial = ProtectorPlugin.getPluginConfig().getWandMaterial();
+
+            if (wandMaterial != null && player.getItemInHand().getType() == wandMaterial && player.hasPermission("worldprotector.region.wand")) {
                 final Block block = event.getClickedBlock();
                 final Set<Region> regions = config.getRegionContainer().getRegions(block.getX(), block.getY(), block.getZ());
 
