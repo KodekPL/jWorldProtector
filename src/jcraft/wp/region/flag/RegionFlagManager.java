@@ -16,6 +16,7 @@ public class RegionFlagManager {
 
     public RegionFlagManager() {
         this.registerFlag(DefaultFlags.BUILD_FLAG);
+        this.registerFlag(DefaultFlags.PVP_FLAG);
 
         this.reloadRegionsOnRegister = true;
     }

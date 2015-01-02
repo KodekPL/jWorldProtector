@@ -10,6 +10,8 @@ public class PluginConfig extends YamlHandler {
     @SaveField(section = "regions")
     public String warningMessage;
     @SaveField(section = "regions")
+    public String pvpWarningMessage;
+    @SaveField(section = "regions")
     public String wand;
 
     private Material wandMaterial;
@@ -18,6 +20,7 @@ public class PluginConfig extends YamlHandler {
         super(file);
 
         this.warningMessage = ChatColor.RED + "Hey! " + ChatColor.GRAY + "Interactions in this region are blocked (cuboid).";
+        this.pvpWarningMessage = ChatColor.RED + "Hey! " + ChatColor.GRAY + "PVP in this region is blocked (cuboid).";
 
         this.wand = Material.WOOD_AXE.name();
     }

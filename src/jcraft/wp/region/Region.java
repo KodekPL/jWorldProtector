@@ -337,6 +337,26 @@ public class Region {
         return null;
     }
 
+    public Boolean canPVPFlag() {
+        final Boolean pvpFlag = (Boolean) this.getFlag(DefaultFlags.PVP_FLAG);
+
+        if (pvpFlag != null) {
+            return pvpFlag;
+        }
+
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            final Boolean parentPVPFlag = parentRegion.canPVPFlag();
+
+            if (parentPVPFlag != null) {
+                return parentPVPFlag;
+            }
+        }
+
+        return null;
+    }
+
     public boolean canInteract(Player player) {
         return canInteract(RegionInteraction.NONE, player);
     }
@@ -347,6 +367,17 @@ public class Region {
 
         if (buildFlag != null) {
             return buildFlag;
+        }
+
+        // PVP flag
+        if (type == RegionInteraction.PVP) {
+            final Boolean pvpFlag = this.canPVPFlag();
+
+            if (pvpFlag != null) {
+                return pvpFlag;
+            } else {
+                return true;
+            }
         }
 
         if (this.isOwnerOrMember(player.getUniqueId())) {

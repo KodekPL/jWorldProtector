@@ -99,7 +99,7 @@ public class RegionListener implements Listener {
             final World world = entity.getWorld();
             final Location location = entity.getLocation();
 
-            if (!canInteract(RegionInteraction.BLOCK_PLACE, world, location.getX(), location.getY(), location.getZ())) {
+            if (!hasRegion(world, location.getX(), location.getY(), location.getZ())) {
                 @SuppressWarnings("deprecation")
                 final ItemStack dropItem = MaterialUtils.getItemStackFromBlock(entity.getMaterial(), entity.getBlockData(), 1);
 
@@ -128,7 +128,7 @@ public class RegionListener implements Listener {
                 event.setCancelled(true);
             }
         } else {
-            if (!canInteract(RegionInteraction.VEHICLE_DESTROY, world, location.getX(), location.getY(), location.getZ())) {
+            if (!hasRegion(world, location.getX(), location.getY(), location.getZ())) {
                 event.setCancelled(true);
             }
         }
@@ -155,7 +155,7 @@ public class RegionListener implements Listener {
         final World world = event.getEntity().getWorld();
         final Location location = event.getEntity().getLocation();
 
-        if (!canInteract(RegionInteraction.HANGING_BREAK, world, location.getX(), location.getY(), location.getZ())) {
+        if (!hasRegion(world, location.getX(), location.getY(), location.getZ())) {
             event.setCancelled(true);
         }
     }
@@ -177,7 +177,7 @@ public class RegionListener implements Listener {
                 event.setCancelled(true);
             }
         } else {
-            if (!canInteract(RegionInteraction.HANGING_BREAK, world, location.getX(), location.getY(), location.getZ())) {
+            if (!hasRegion(world, location.getX(), location.getY(), location.getZ())) {
                 event.setCancelled(true);
             }
         }
@@ -218,7 +218,29 @@ public class RegionListener implements Listener {
                     event.setCancelled(true);
                 }
             } else {
-                if (!canInteract(RegionInteraction.ENTITY_DAMAGE, world, location.getX(), location.getY(), location.getZ())) {
+                if (!hasRegion(world, location.getX(), location.getY(), location.getZ())) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPVPDamage(EntityDamageByEntityEvent event) {
+        final Player target = (Player) event.getEntity();
+        final World world = target.getWorld();
+
+        if (!world.getPVP()) {
+            return;
+        }
+
+        if (target instanceof Player) {
+            final Entity damager = EntityUtils.getSourceEntity(event.getDamager());
+
+            if (damager instanceof Player) {
+                final Location location = target.getLocation();
+
+                if (!canInteract(RegionInteraction.PVP, world, (Player) damager, location.getX(), location.getY(), location.getZ())) {
                     event.setCancelled(true);
                 }
             }
@@ -235,27 +257,38 @@ public class RegionListener implements Listener {
         final boolean result = config.getRegionContainer().canInteract(type, player, x, y, z);
 
         if (!result) {
-            sendWarningMessage(player);
+            sendWarningMessage(player, type);
         }
 
         return result;
     }
 
-    public boolean canInteract(RegionInteraction type, World world, double x, double y, double z) {
+    public boolean hasRegion(World world, double x, double y, double z) {
         final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(world.getName());
 
         if (config == null) {
             return true;
         }
 
-        return config.getRegionContainer().canInteract(type, x, y, z);
+        return config.getRegionContainer().hasRegion(x, y, z);
     }
 
-    public void sendWarningMessage(Player player) {
+    public void sendWarningMessage(Player player, RegionInteraction type) {
         final Long lastTime = (Long) MetadataUtil.get(player, "lastWarningMessage");
 
         if (lastTime == null || System.currentTimeMillis() - lastTime.longValue() >= 500L) {
-            player.sendMessage(ProtectorPlugin.getPluginConfig().warningMessage);
+            final String message;
+
+            switch (type) {
+            case PVP:
+                message = ProtectorPlugin.getPluginConfig().pvpWarningMessage;
+                break;
+            default:
+                message = ProtectorPlugin.getPluginConfig().warningMessage;
+                break;
+            }
+
+            player.sendMessage(message);
 
             MetadataUtil.set(player, "lastWarningMessage", Long.valueOf(System.currentTimeMillis()));
         }

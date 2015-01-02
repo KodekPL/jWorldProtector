@@ -162,11 +162,7 @@ public class RegionContainer extends YamlHandler {
         return true;
     }
 
-    public boolean canInteract(double x, double y, double z) {
-        return canInteract(RegionInteraction.NONE, x, y, z);
-    }
-
-    public boolean canInteract(RegionInteraction type, double x, double y, double z) {
+    public boolean hasRegion(double x, double y, double z) {
         final long regionHash = hashPosition((int) x, (int) z);
         final Set<Region> regions = regionsFragments.get(regionHash);
 
