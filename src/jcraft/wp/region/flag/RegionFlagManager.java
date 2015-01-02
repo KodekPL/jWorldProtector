@@ -19,6 +19,8 @@ public class RegionFlagManager {
         this.registerFlag(DefaultFlags.PVP_FLAG);
         this.registerFlag(DefaultFlags.MOBSPAWN_FLAG);
         this.registerFlag(DefaultFlags.ENDERPEARL_FLAG);
+        this.registerFlag(DefaultFlags.CONTAINER_ACCESS_FLAG);
+        this.registerFlag(DefaultFlags.BLOCK_INTERACT_FLAG);
 
         this.reloadRegionsOnRegister = true;
     }

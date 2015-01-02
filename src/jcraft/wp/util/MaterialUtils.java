@@ -43,6 +43,23 @@ public class MaterialUtils {
         }
     }
 
+    public static boolean isContainerMaterialBlock(Material material) {
+        switch (material) {
+        case CHEST:
+        case TRAPPED_CHEST:
+        case DISPENSER:
+        case DROPPER:
+        case HOPPER:
+        case BREWING_STAND:
+        case FURNACE:
+        case BURNING_FURNACE:
+        case BEACON:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     public static boolean isInteractiveMaterialBlock(Material material) {
         switch (material) {
         case DISPENSER:

@@ -91,9 +91,25 @@ public class RegionListener implements Listener {
         final Block block = event.getClickedBlock();
 
         if (MaterialUtils.isInteractiveMaterialBlock(block.getType()) || MaterialUtils.isInteractiveMaterialItem(player.getItemInHand().getType())) {
-            if (!canInteract(RegionInteraction.BLOCK_INTERACT, world, player, block.getX(), block.getY(), block.getZ())) {
-                event.setCancelled(true);
+            final Boolean blockInteractFlag = (Boolean) getRegionFlag(world, block.getX(), block.getY(), block.getZ(),
+                    DefaultFlags.BLOCK_INTERACT_FLAG);
+
+            if (blockInteractFlag != null && blockInteractFlag) {
+                return;
             }
+        }
+
+        if (MaterialUtils.isContainerMaterialBlock(block.getType())) {
+            final Boolean containerAccessFlag = (Boolean) getRegionFlag(world, block.getX(), block.getY(), block.getZ(),
+                    DefaultFlags.CONTAINER_ACCESS_FLAG);
+
+            if (containerAccessFlag != null && containerAccessFlag) {
+                return;
+            }
+        }
+
+        if (!canInteract(RegionInteraction.BLOCK_INTERACT, world, player, block.getX(), block.getY(), block.getZ())) {
+            event.setCancelled(true);
         }
     }
 
