@@ -21,6 +21,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -250,6 +251,18 @@ public class RegionListener implements Listener {
                     event.setCancelled(true);
                 }
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCreatureSpawn(CreatureSpawnEvent event) {
+        final World world = event.getEntity().getWorld();
+        final Location location = event.getEntity().getLocation();
+
+        final Boolean mobSpawnFlag = (Boolean) getRegionFlag(world, location.getX(), location.getY(), location.getZ(), DefaultFlags.MOBSPAWN_FLAG);
+
+        if (mobSpawnFlag != null && !mobSpawnFlag) {
+            event.setCancelled(true);
         }
     }
 
