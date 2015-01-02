@@ -33,6 +33,8 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -264,6 +266,28 @@ public class RegionListener implements Listener {
         if (mobSpawnFlag != null && !mobSpawnFlag) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.getFrom() == null || event.getTo() == null) {
+            return;
+        }
+
+        if (event.getCause() == TeleportCause.ENDER_PEARL) {
+            final World world = event.getFrom().getWorld();
+            final Location location = event.getTo();
+
+            final Boolean enderpearlFlag = (Boolean) getRegionFlag(world, location.getX(), location.getY(), location.getZ(),
+                    DefaultFlags.ENDERPEARL_FLAG);
+
+            if (enderpearlFlag != null && !enderpearlFlag) {
+                sendWarningMessage(event.getPlayer(), RegionInteraction.NONE);
+
+                event.setCancelled(true);
+            }
+        }
+
     }
 
     public boolean canInteract(RegionInteraction type, World world, Player player, double x, double y, double z) {
