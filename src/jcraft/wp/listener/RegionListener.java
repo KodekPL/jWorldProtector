@@ -2,7 +2,9 @@ package jcraft.wp.listener;
 
 import jcraft.wp.ProtectorPlugin;
 import jcraft.wp.WorldInstance;
+import jcraft.wp.region.DefaultFlags;
 import jcraft.wp.region.RegionInteraction;
+import jcraft.wp.region.flag.RegionFlag;
 import jcraft.wp.util.EntityUtils;
 import jcraft.wp.util.MaterialUtils;
 import jcraft.wp.util.MetadataUtil;
@@ -240,7 +242,11 @@ public class RegionListener implements Listener {
             if (damager instanceof Player) {
                 final Location location = target.getLocation();
 
-                if (!canInteract(RegionInteraction.PVP, world, (Player) damager, location.getX(), location.getY(), location.getZ())) {
+                final Boolean pvpFlag = (Boolean) getRegionFlag(world, location.getX(), location.getY(), location.getZ(), DefaultFlags.PVP_FLAG);
+
+                if (pvpFlag != null && !pvpFlag) {
+                    sendWarningMessage((Player) damager, RegionInteraction.PVP);
+
                     event.setCancelled(true);
                 }
             }
@@ -271,6 +277,16 @@ public class RegionListener implements Listener {
         }
 
         return config.getRegionContainer().hasRegion(x, y, z);
+    }
+
+    public Object getRegionFlag(World world, double x, double y, double z, RegionFlag flag) {
+        final WorldInstance config = ProtectorPlugin.getWorldsManager().getWorldInstance(world.getName());
+
+        if (config == null) {
+            return false;
+        }
+
+        return config.getRegionContainer().getRegionFlag(x, y, z, flag);
     }
 
     public void sendWarningMessage(Player player, RegionInteraction type) {

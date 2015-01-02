@@ -179,6 +179,42 @@ public class RegionContainer extends YamlHandler {
         return true;
     }
 
+    public boolean hasRegionFlag(double x, double y, double z, RegionFlag flag) {
+        final long regionHash = hashPosition((int) x, (int) z);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return true;
+        }
+
+        for (Region region : regions) {
+            if (region.contains(x, y, z) && region.hasFlag(flag)) {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    public Object getRegionFlag(double x, double y, double z, RegionFlag flag) {
+        final long regionHash = hashPosition((int) x, (int) z);
+        final Set<Region> regions = regionsFragments.get(regionHash);
+
+        if (regions == null || regions.isEmpty()) {
+            return null;
+        }
+
+        for (Region region : regions) {
+            if (region.contains(x, y, z) && region.hasFlag(flag)) {
+                Object flagState = region.getFlag(flag);
+
+                return flagState;
+            }
+        }
+
+        return null;
+    }
+
     public String getList() {
         final StringBuilder builder = new StringBuilder();
 

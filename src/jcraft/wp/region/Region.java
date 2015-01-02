@@ -272,7 +272,23 @@ public class Region {
             return null;
         }
 
-        return getFlags().get(flag);
+        final Object regionFlag = getFlags().get(flag);
+
+        if (regionFlag != null) {
+            return regionFlag;
+        }
+
+        final Region parentRegion = this.getParent();
+
+        if (parentRegion != null) {
+            final Object parentRegionFlag = parentRegion.getFlag(flag);
+
+            if (parentRegionFlag != null) {
+                return parentRegionFlag;
+            }
+        }
+
+        return null;
     }
 
     public void addFlag(RegionFlag flag, Object state) {
@@ -317,67 +333,15 @@ public class Region {
                 && z < max.getBlockZ() + 1;
     }
 
-    public Boolean canBuildFlag() {
-        final Boolean buildFlag = (Boolean) this.getFlag(DefaultFlags.BUILD_FLAG);
-
-        if (buildFlag != null) {
-            return buildFlag;
-        }
-
-        final Region parentRegion = this.getParent();
-
-        if (parentRegion != null) {
-            final Boolean parentBuildFlag = parentRegion.canBuildFlag();
-
-            if (parentBuildFlag != null) {
-                return parentBuildFlag;
-            }
-        }
-
-        return null;
-    }
-
-    public Boolean canPVPFlag() {
-        final Boolean pvpFlag = (Boolean) this.getFlag(DefaultFlags.PVP_FLAG);
-
-        if (pvpFlag != null) {
-            return pvpFlag;
-        }
-
-        final Region parentRegion = this.getParent();
-
-        if (parentRegion != null) {
-            final Boolean parentPVPFlag = parentRegion.canPVPFlag();
-
-            if (parentPVPFlag != null) {
-                return parentPVPFlag;
-            }
-        }
-
-        return null;
-    }
-
     public boolean canInteract(Player player) {
         return canInteract(RegionInteraction.NONE, player);
     }
 
     public boolean canInteract(RegionInteraction type, Player player) {
-        // Build flag
-        final Boolean buildFlag = this.canBuildFlag();
+        final Boolean buildFlag = (Boolean) this.getFlag(DefaultFlags.BUILD_FLAG);
 
         if (buildFlag != null) {
             return buildFlag;
-        }
-
-        // PVP flag
-        if (type == RegionInteraction.PVP) {
-            final Boolean pvpFlag = this.canPVPFlag();
-
-            if (pvpFlag != null) {
-                return pvpFlag;
-            } else {
-                return true;
-            }
         }
 
         if (this.isOwnerOrMember(player.getUniqueId())) {
