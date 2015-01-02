@@ -21,7 +21,7 @@ public class RegionCommands extends CommandHandler {
     @Override
     public void noArgsCommand(CommandSender sender, String[] args) {
         sender.sendMessage(ChatColor.YELLOW
-                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/setflag/removeflag/setparent/removeparent/save/load> [args...]");
+                + "/region <define/redefine/select/remove/info/list/tp/addowner/removeowner/addmember/removemember/setperm/removeperm/flags/setflag/removeflag/setparent/removeparent/save/load> [args...]");
     }
 
     private static final Pattern VALID_CHARACTERS = Pattern.compile("^[A-Za-z0-9_,'\\-\\+/]{1,}$");
@@ -495,6 +495,11 @@ public class RegionCommands extends CommandHandler {
         config.getRegionContainer().save();
 
         sender.sendMessage(ChatColor.GREEN + "Removed permission of region with name '" + regionName + "'.");
+    }
+
+    @PluginCommand(args = { "flags" }, minArgs = 1, maxArgs = 1, requiresPlayer = false, permission = "worldprotector.region.flags", usage = "/region flags")
+    public void onRegionFlagsList(CommandSender sender, String[] args) {
+        sender.sendMessage(ProtectorPlugin.getRegionFlagManager().getList());
     }
 
     @PluginCommand(args = { "setflag" }, minArgs = 4, maxArgs = 5, requiresPlayer = false, permission = "worldprotector.region.flags", usage = "/region setflag <region_name> <flag_name> <flag_state> [world_name]")

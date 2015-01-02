@@ -43,8 +43,8 @@ public class RegionFlagManager {
         builder.append(ChatColor.BLUE).append("Flags: ").append(ChatColor.YELLOW);
 
         if (!flags.isEmpty()) {
-            for (String flagName : flags.keySet()) {
-                builder.append(flagName).append(", ");
+            for (RegionFlag flag : flags.values()) {
+                builder.append(flag.getName()).append(" (").append(flag.getArgumentType().getSimpleName().toLowerCase()).append(')').append(", ");
             }
 
             builder.delete(builder.length() - 2, builder.length());
