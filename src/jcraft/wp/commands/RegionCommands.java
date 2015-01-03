@@ -635,7 +635,10 @@ public class RegionCommands extends CommandHandler {
             return;
         }
 
-        region.setParent(parentRegion);
+        if (!region.setParent(parentRegion)) {
+            sender.sendMessage(ChatColor.RED + "Region parent was not set correctly.");
+            return;
+        }
 
         config.getRegionContainer().save();
 

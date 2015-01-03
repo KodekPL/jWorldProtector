@@ -13,7 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
-public class Region {
+public class Region implements Comparable<Region> {
 
     private BlockVector min;
     private BlockVector max;
@@ -303,17 +303,29 @@ public class Region {
         return this.parent;
     }
 
-    public void setParent(Region region) {
+    public boolean setParent(Region region) {
         if (region == null) {
             this.parent = null;
-            return;
+            return true;
         }
 
-        if (this.equals(region)) {
-            return;
+        if (region == this) {
+            return false;
+        }
+
+        Region regionParent = region.getParent();
+
+        while (regionParent != null) {
+            if (regionParent == this) {
+                return false;
+            }
+
+            regionParent = regionParent.getParent();
         }
 
         this.parent = region;
+
+        return true;
     }
 
     public Set<Long> getHash() {
@@ -430,6 +442,19 @@ public class Region {
                 .append(this.getMaxPoint().getBlockZ()).append(')');
 
         return builder.toString();
+    }
+
+    @Override
+    public int compareTo(Region compareRegion) {
+        if (this.getParent() != null && compareRegion.getParent() == null) {
+            return -1;
+        }
+
+        if (this.getParent() == null && compareRegion.getParent() != null) {
+            return 1;
+        }
+
+        return 0;
     }
 
 }

@@ -2,8 +2,11 @@ package jcraft.wp.region;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -145,16 +148,29 @@ public class RegionContainer extends YamlHandler {
 
     public boolean canInteract(RegionInteraction type, Player player, double x, double y, double z) {
         final long regionHash = hashPosition((int) x, (int) z);
-        final Set<Region> regions = regionsFragments.get(regionHash);
 
-        if (regions == null || regions.isEmpty()) {
+        if (!regionsFragments.containsKey(regionHash)) {
             return true;
         }
 
-        for (Region region : regions) {
+        final List<Region> sortedRegions = new ArrayList<Region>(regionsFragments.get(regionHash));
+
+        Collections.sort(sortedRegions);
+
+        final Set<Region> ignoreRegions = new HashSet<Region>();
+
+        for (Region region : sortedRegions) {
             if (region.contains(x, y, z)) {
+                if (ignoreRegions.contains(region)) {
+                    continue;
+                }
+
                 if (!region.canInteract(type, player)) {
                     return false;
+                }
+
+                if (region.getParent() != null) {
+                    ignoreRegions.add(region.getParent());
                 }
             }
         }
